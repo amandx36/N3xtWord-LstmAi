@@ -1,0 +1,15 @@
+class PredictionRequest():
+
+    text: str = Field(
+        min_length=1,
+        max_length=5000
+    )
+
+    top_k: int = Field(
+        default=3,
+        ge=1,
+        le=10
+    )
+
+
+# -
