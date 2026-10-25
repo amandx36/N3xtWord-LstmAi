@@ -1,76 +1,70 @@
-import json 
-import re 
-from pathlib import Path 
-import os 
+
+import os
+
 from fastapi import FastAPI
-import numpy as np 
-import tensorflow as tf 
-from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
-MODEL_PATH = os.getenv("MODEL_PATH")
-VOCAB_PATH =  os.getenv("VOCAB_PATH")
+from .predictNextWord import load_artifacts, predict_next_word
+from .requestFormat import PredictionRequest
 
 
-app = FastAPI(title="Next word prediction Api  using lstm model ", description="Backend api for predicting the next word",version="1.0.0")
+app = FastAPI(
+    title="Next Word Prediction API",
+    description="predict the next word using trained lstm model ",
+    version="1.0.0",
+)
 
-# adding the cors 
+origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8000"
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],
-    
-    allow_methods=["GET","POST"],
+    allow_origins=origins,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"]
 )
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Welcome to the next word prediction api using lstm model ",
-        "version": "1.0.0"
-    }
+model_load_error: str | None = None
 
-@app.get("/health")
-async def health():
-    return {
-        "status": "ok",
-        "message": "API is healthy"
-    }
-
-# load the trained model 
 
 @app.on_event("startup")
-def load_model():
+def startup() -> None:
+    global model_load_error
+    try:
+        load_artifacts()
+        model_load_error = None
+    except RuntimeError as exc:
+        # Keep health/status routes available so a missing artifact is diagnosable.
+        model_load_error = str(exc)
 
-    global model, word_to_id, id_to_word
 
-    if not MODEL_PATH.exists():
-        raise RuntimeError(
-            f"Model not found: {MODEL_PATH}"
-        )
+@app.get("/")
+def root() -> dict[str, str]:
+    return {"message": "Next Word Prediction API", "version": app.version}
 
-    if not VOCAB_PATH.exists():
-        raise RuntimeError(
-            f"Vocabulary not found: {VOCAB_PATH}"
-        )
 
-    # Load the trained LSTM model
-    model = tf.keras.models.load_model(
-        MODEL_PATH,
-        compile=False
-    )
-
-    # Load the vocabulary used during training
-    with open(VOCAB_PATH, "r", encoding="utf-8") as file:
-        vocabulary = json.load(file)
-
-    word_to_id = vocabulary["word_to_id"]
-
-    id_to_word = {
-        int(token_id): word
-        for token_id, word
-        in vocabulary["id_to_word"].items()
+@app.get("/health")
+def health() -> dict[str, str | bool | None]:
+    ready = model_load_error is None
+    return {
+        "status": "ok" if ready else "degraded",
+        "model_loaded": ready,
+        "detail": model_load_error,
     }
 
-    print("LSTM model loaded successfully!")
-    print("Vocabulary loaded successfully!")
 
+@app.post("/predict")
+def predict(request: PredictionRequest) -> dict[str, object]:
+    predictions = predict_next_word(request.text, request.top_k)
+    response: dict[str, object] = {
+        "input": request.text,
+        "predictions": predictions,
+    }
+    if predictions:
+        response["predicted_word"] = predictions[0]["word"]
+        response["confidence"] = predictions[0]["probability"]
+    return response
