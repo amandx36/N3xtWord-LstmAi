@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Machine Learning
+checkpoints/
+outputs/
+runs/
+*.h5
+*.keras
+*.pt
+*.pth
+*.onnx
+
+# Datasets
+data/
+datasets/
+
+# Next.js (if applicable)
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+
+node_modules
+
