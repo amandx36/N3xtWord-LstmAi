@@ -44,8 +44,9 @@
 }
 
 .brand-text {
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 850;
+
 }
 
 .brand-light {
@@ -58,9 +59,10 @@
   align-items: center;
   gap: 9px;
   color: #989da8;
-  font-size: 11px;
+  font-size: 25px;
   font-weight: 750;
   letter-spacing: 0.15em;
+  font-weight: bolder;
 }
 
 .header-dot {
@@ -80,7 +82,7 @@
 .header-link {
   color: #c7c9d1;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 25px;
   font-weight: 600;
   transition: color 200ms;
 }
