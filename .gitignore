@@ -34,3 +34,6 @@ out/
 
 node_modules
 
+
+# the ai model of it 
+lstm_model.keras
