@@ -1,14 +1,3 @@
-<<<<<<< Updated upstream
-export default function Middlepart(){
-    return(
-        <>
-          <input type="text" />
-        
-        
-        </>
-    ) 
-}
-=======
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -183,4 +172,3 @@ export default function MiddlePart() {
     </section>
   );
 }
->>>>>>> Stashed changes
