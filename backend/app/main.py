@@ -10,7 +10,7 @@ from .requestFormat import PredictionRequest
 
 app = FastAPI(
     title="Next Word Prediction API",
-    description="predict the next word using trained lstm model ",
+    description="predict the next word using trained lstm ",
     version="1.0.0",
 )
 
