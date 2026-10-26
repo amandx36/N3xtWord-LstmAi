@@ -1,0 +1,12 @@
+<<<<<<< Updated upstream
+=======
+.site-header { display: flex; width: min(100% - 48px, 1160px); min-height: 78px; align-items: center; justify-content: space-between; margin: 0 auto; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.brand { display: flex; align-items: center; gap: 11px; color: #f4f4f7; text-decoration: none; font-size: 16px; font-weight: 750; letter-spacing: -0.04em; }
+.brand-mark { display: grid; width: 33px; height: 33px; place-items: center; border: 1px solid rgba(185,250,124,0.45); border-radius: 10px; color: #e9f9d8; font-size: 14px; }
+.brand-mark span, .brand-light { color: #b9fa7c; }
+.header-caption { display: flex; align-items: center; gap: 8px; color: #898e9b; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; }
+.header-dot { width: 6px; height: 6px; border-radius: 50%; background: #b9fa7c; }
+.header-link { color: #c7c9d1; text-decoration: none; font-size: 12px; }
+.header-link:hover { color: #b9fa7c; }
+@media (max-width: 560px) { .site-header { width: calc(100% - 32px); min-height: 66px; } .header-caption { display: none; } }
+>>>>>>> Stashed changes

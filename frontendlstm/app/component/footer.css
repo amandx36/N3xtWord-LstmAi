@@ -1,0 +1,4 @@
+.site-footer { display: flex; width: min(100% - 48px, 1160px);
+     justify-content: space-between; margin: 0 auto; padding: 22px 0 28px; border-top: 1px solid rgba(255,255,255,0.08); color: #777c89; font-size: 11px; }
+.footer-separator { padding: 0 5px; color: #b9fa7c; }
+@media (max-width: 560px) { .site-footer { width: calc(100% - 32px); gap: 12px; font-size: 10px; } }
