@@ -1,0 +1,26 @@
+services:
+  frontend:
+    build:
+      context: ./frontendlstm
+      dockerfile: Dockerfile
+    container_name: nextword-pred
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontendlstm/.env
+    environment:
+      N3xtharBackendUrl: http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nextword-pred-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/app/.env
+    restart: unless-stopped
