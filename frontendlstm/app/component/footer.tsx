@@ -1,12 +1,10 @@
+import './footer.css';
+
 export default function Footer() {
-    return (
-        <>
-            <footer>
-                <p> git hub amandx36 2026 NextWord AI. All rights reserved</p>
-                <br />
-
-
-            </footer>
-        </>
-    );
+  return (
+    <footer className="site-footer">
+      <span>Built for curious minds.</span>
+      <span>NextWord AI <span className="footer-separator">·</span> 2026</span>
+    </footer>
+  );
 }

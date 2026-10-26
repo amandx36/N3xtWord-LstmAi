@@ -1,15 +1,115 @@
-* {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+.site-header {
+  display: flex;
+  width: min(100% - 48px, 1160px);
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-body {
-    background-image: url("/lstmImageModel.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 100vh;
-    height: auto;
-    width: 100%;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #f4f4f7;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  transition: transform 200ms;
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+}
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1.5px solid rgba(185, 250, 124, 0.5);
+  border-radius: 11px;
+  background: rgba(185, 250, 124, 0.08);
+  color: #e9f9d8;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 0 20px rgba(185, 250, 124, 0.15);
+}
+
+.brand-mark span {
+  color: #b9fa7c;
+  font-size: 18px;
+}
+
+.brand-text {
+  font-size: 22px;
+  font-weight: 850;
+}
+
+.brand-light {
+  color: #b9fa7c;
+  font-weight: 900;
+}
+
+.header-caption {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #989da8;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+}
+
+.header-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #b9fa7c;
+  box-shadow: 0 0 10px rgba(185, 250, 124, 0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.header-link {
+  color: #c7c9d1;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 200ms;
+}
+
+.header-link:hover {
+  color: #b9fa7c;
+}
+
+.header-link span {
+  display: inline-block;
+  transition: transform 200ms;
+}
+
+.header-link:hover span {
+  transform: translate(2px, -2px);
+}
+
+@media (max-width: 560px) {
+  .site-header {
+    width: calc(100% - 32px);
+    min-height: 66px;
+  }
+  .header-caption {
+    display: none;
+  }
+  .brand {
+    font-size: 18px;
+  }
+  .brand-text {
+    font-size: 19px;
+  }
 }

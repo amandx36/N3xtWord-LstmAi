@@ -24,7 +24,7 @@ export async function GET() {
     });
   } catch {
     return Response.json(
-      { error: 'Unable to connect to the Spring Boot backend.' },
+      { error: 'Unable to connect to the prediction api   backend.' },
       { status: 502 }
     );
   }
