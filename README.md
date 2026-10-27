@@ -1,102 +1,103 @@
 # NextWord AI
 
-NextWord AI is a full-stack next-word prediction demo. Enter a sentence in the web interface and the application uses a trained LSTM language model to suggest likely continuations. Suggestions can be clicked to add them to the text and continue experimenting.
+**NextWord AI** is an interactive next-word prediction demo powered by a custom LSTM language model. Type a sentence, pause to see ranked suggestions, and select a suggestion to extend the text and explore the next prediction.
 
-The project pairs a Next.js and TypeScript frontend with a FastAPI inference service. The model expects up to 30 tokens and returns ranked candidates with their model probabilities. Those probabilities are scores from the model, not calibrated guarantees of correctness.
-
-## Features
-
-- Interactive text input with automatic predictions as you type
-- Adjustable number of suggestions (up to 10)
-- Click a suggestion to append it to the input
-- FastAPI endpoints for prediction and service health
-- Docker Compose configuration for running both services together
-- Notebook containing the model development workflow
-
-## Architecture
-
-```text
-Browser → Next.js frontend (:3000) → FastAPI (:8000)
-                                      ├── Keras model
-                                      └── Vocabulary
-```
-
-The browser calls Next.js route handlers at `/api/predict` and `/api/health`. Those handlers proxy requests to FastAPI, using `N3xtharBackendUrl` as the backend base URL. The API loads the model and vocabulary once when it starts.
-
-## Repository layout
-
-| Path | Purpose |
+| Application | Link |
 | --- | --- |
-| `frontendlstm/` | Next.js App Router application and API proxy routes |
-| `backend/app/` | FastAPI application, request schema, and prediction logic |
-| `backend/app/artifacts/` | Keras model and vocabulary required for inference |
-| `NextWordPredictor.ipynb` | Notebook used to develop and train the LSTM |
-| `docker-compose.yml` | Local multi-container setup |
-| `PRD.md` | Product requirements and planned product direction |
+| Web app | [n3xt-word-lstm-ai.vercel.app](https://n3xt-word-lstm-ai.vercel.app/) |
+| Prediction API | [n3xtword-lstmai.onrender.com](https://n3xtword-lstmai.onrender.com/) |
+| API health | [n3xtword-lstmai.onrender.com/health](https://n3xtword-lstmai.onrender.com/health) |
+| Source | [GitHub repository](https://github.com/amandx36/N3xtWord-LstmAi) |
 
-## Requirements
+> **Project status:** This is an experimental portfolio/learning project, not a production writing assistant. Model scores are not calibrated guarantees of correctness. No model evaluation metrics are published by this repository.
 
-- Docker Engine with the Docker Compose plugin, for the container setup; or
-- Python 3.12+ and Node.js 22+ for running each service directly
+## What it does
 
-The checked-in model artifact is approximately 142 MB. Ensure it is present at `backend/app/artifacts/lstm_model.keras` along with `vocabulary.json` before starting the backend. The vocabulary file is tracked; the model file is ignored by `.gitignore`, so a fresh clone may need the model copied from your artifact storage or training output.
+- Predicts automatically after typing pauses, with a manual prediction button as well.
+- Offers 3, 5, 7, or 10 candidate words.
+- Lets users select a suggestion to append it to their input.
+- Shows backend connectivity status in the interface.
+- Uses a Next.js server route as a same-origin proxy to the FastAPI service.
+- Includes a Jupyter notebook documenting the model development workflow.
 
-## Run with Docker Compose
+## How it works
 
-Compose expects these two environment files (both are git-ignored):
-
-- `frontendlstm/.env`
-- `backend/app/.env`
-
-Create `frontendlstm/.env` containing:
-
-```dotenv
-N3xtharBackendUrl=http://localhost:8000
+```mermaid
+flowchart LR
+    U[Browser] --> W[Next.js web app]
+    W -->|/api/predict, /api/health| P[Next.js route handlers]
+    P -->|HTTP| A[FastAPI]
+    A --> T[Text cleanup and tokenization]
+    T --> V[Vocabulary and 30-token sequence]
+    V --> M[Keras LSTM model]
+    M --> A
+    A --> P
+    P --> W
 ```
 
-And create `backend/app/.env` containing:
+The API loads the model and vocabulary at startup. Input is normalized using the WikiText cleanup rules, lowercased and tokenized, mapped to vocabulary IDs (`<UNK>` for unknown words), truncated to the most recent 30 tokens, and left-padded with `<PAD>`. Suggestions omit `<PAD>` and `<UNK>`.
 
-```dotenv
-SEQ_LEN=30
-PAD_TOKEN=<PAD>
-UNK_TOKEN=<UNK>
-```
+## Technology
 
-Start both services from the repository root:
+- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- **API:** Python 3.12, FastAPI, Pydantic, Uvicorn
+- **Inference:** TensorFlow/Keras and NumPy
+- **Artifact hosting:** Hugging Face Hub (`amandx360/lstmN3xwordPredictor`)
+- **Training exploration:** `NextWordPredictor.ipynb` and WikiText-103
+
+## Repository map
+
+| Path | Description |
+| --- | --- |
+| `frontendlstm/app/` | Next.js app, UI components, and proxy route handlers |
+| `frontendlstm/app/api/` | `/api/predict` and `/api/health` handlers |
+| `backend/app/` | FastAPI endpoints, request validation, and inference code |
+| `backend/app/artifacts/` | Runtime model and vocabulary location |
+| `backend/downloadModelAndVoc.py` | Downloads the model and vocabulary from Hugging Face |
+| `NextWordPredictor.ipynb` | Model development/training notebook |
+| `docker-compose.yml` | Local two-service container configuration |
+| `PRD.md` | Product requirements, including planned (not necessarily implemented) work |
+
+## Run locally
+
+### Prerequisites
+
+- Python 3.12
+- Node.js 22 or later and npm
+- Network access to download the model artifacts from Hugging Face
+
+### 1. Install backend dependencies and fetch model artifacts
+
+From the repository root, create and activate a virtual environment, then install the backend requirements:
 
 ```sh
-docker compose up --build
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r backend/requirement.txt
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The API is available at [http://localhost:8000](http://localhost:8000), with interactive documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
-
-The frontend container overrides `N3xtharBackendUrl` to `http://backend:8000` so it can reach the API over the Compose network. The Dockerfiles currently start the frontend in Next.js development mode.
-
-## Run locally without Docker
-
-### 1. Start the API
-
-From the repository root:
+Download the model and vocabulary into the location used by the local API:
 
 ```sh
-python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\\Scripts\\activate
-pip install -r backend/requirement.txt
-uvicorn app.main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
+cd backend
+ARTIFACTS_DIR="$PWD/app/artifacts" python downloadModelAndVoc.py
+cd ..
 ```
 
-The API reads these optional environment variables. Defaults point to the checked-in artifact locations relative to `backend/app/`.
+The model file is excluded from Git, so a fresh clone needs this download (or a compatible model copied into `backend/app/artifacts/`). The vocabulary JSON is also obtained by the download script; keep it paired with the model that produced it.
 
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `MODEL_PATH` | `backend/app/artifacts/lstm_model.keras` | Keras model path |
-| `VOCAB_PATH` | `backend/app/artifacts/vocabulary.json` | Vocabulary JSON path |
-| `SEQ_LEN` | `30` | Input sequence length |
-| `PAD_TOKEN` | `<PAD>` | Vocabulary padding token |
-| `UNK_TOKEN` | `<UNK>` | Vocabulary unknown-word token |
-| `CORS_ORIGINS` | `http://localhost:3000,http://localhost:8000` | Comma-separated allowed origins |
+### 2. Start the API
 
-### 2. Start the frontend
+From the repository root, with the virtual environment active:
+
+```sh
+python -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+```
+
+The API root is [http://127.0.0.1:8000](http://127.0.0.1:8000), interactive docs are at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), and health is at [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health).
+
+### 3. Start the frontend
 
 In a second terminal:
 
@@ -106,19 +107,56 @@ npm ci
 npm run dev
 ```
 
-The frontend defaults its server-side API proxy to `http://127.0.0.1:8000`. To change it, set `N3xtharBackendUrl` in `frontendlstm/.env.local`, for example:
+By default, the Next.js server proxies API requests to `http://127.0.0.1:8000`. Override it by creating `frontendlstm/.env.local`:
 
 ```dotenv
 N3xtharBackendUrl=http://127.0.0.1:8000
 ```
 
-Visit [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
-## API
+## Run with Docker Compose
+
+Docker Compose reads environment files from `frontendlstm/.env` and `backend/app/.env`. From the repository root, copy the provided example file to both locations:
+
+```sh
+cp env-example.txt frontendlstm/.env
+cp env-example.txt backend/app/.env
+```
+
+Build the images and start both services:
+
+```sh
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000) for the web app, [http://localhost:8000/docs](http://localhost:8000/docs) for the API docs, and [http://localhost:8000/health](http://localhost:8000/health) to check backend readiness. The backend image downloads the model and vocabulary from Hugging Face while it builds, so the first build needs internet access and may take a while. The frontend connects to the backend using the Compose service address `http://backend:8000`.
+
+Stop the services with `docker compose down`. On subsequent starts, `docker compose up` is sufficient unless you changed files or want to rebuild the images; use `docker compose up --build` to rebuild.
+
+## Configuration
+
+The local API defaults to paths under `backend/app/artifacts/`. These settings are optional when using those defaults.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MODEL_PATH` | `backend/app/artifacts/lstm_model.keras` (resolved relative to the application module) | Keras model file |
+| `VOCAB_PATH` | `backend/app/artifacts/vocabulary.json` (resolved relative to the application module) | Vocabulary JSON file |
+| `SEQ_LEN` | `30` | Number of token positions used for inference |
+| `PAD_TOKEN` | `<PAD>` | Vocabulary padding token |
+| `UNK_TOKEN` | `<UNK>` | Vocabulary unknown-token marker |
+| `CORS_ORIGINS` | `http://localhost:3000,http://localhost:8000` | Comma-separated browser origins permitted by FastAPI CORS |
+| `N3xtharBackendUrl` | `http://127.0.0.1:8000` | Backend base URL used by Next.js server-side proxy routes |
+
+For deployment, set `N3xtharBackendUrl` in the **frontend server environment** to the backend's reachable base URL. It is intentionally not a `NEXT_PUBLIC_` variable because browser requests go through the Next.js route handlers.
+
+## API reference
+
+The backend exposes `GET /`, `GET /health`, and `POST /predict`. Next.js exposes same-origin proxies at `GET /api/health` and `POST /api/predict`.
 
 ### `GET /health`
 
-Reports whether the API loaded the model and vocabulary. A missing or invalid artifact leaves the health route available with a degraded status.
+Returns HTTP 200 with `status: "ok"` when the artifacts load, or `status: "degraded"` when the service is running without a successfully loaded model. A degraded API cannot return predictions.
 
 ```json
 {
@@ -130,16 +168,15 @@ Reports whether the API loaded the model and vocabulary. A missing or invalid ar
 
 ### `POST /predict`
 
-Request:
+Request fields: `text` is required and must be 1–5000 characters; `top_k` is optional, defaults to `3`, and must be between `1` and `10`.
 
-```json
-{
-  "text": "The future of artificial intelligence",
-  "top_k": 3
-}
+```sh
+curl -X POST http://127.0.0.1:8000/predict \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"The future of artificial intelligence","top_k":3}'
 ```
 
-`text` must contain 1–5000 characters. `top_k` is optional and defaults to 3; valid values are 1–10. The response includes the ranked `predictions` array and, when predictions are available, the top `predicted_word` and its `confidence` (the top candidate probability).
+Response shape (candidate words and scores vary by model/input):
 
 ```json
 {
@@ -152,35 +189,33 @@ Request:
 }
 ```
 
-The values above are illustrative. The API cleans and tokenizes text, maps out-of-vocabulary words to `<UNK>`, keeps the most recent 30 tokens, pads on the left with `<PAD>`, and filters `<PAD>` and `<UNK>` from suggestions.
+When candidates are returned, `predicted_word` and `confidence` mirror the first candidate. The probability is the model's output score, not a calibrated measure of real-world certainty. Invalid request fields are rejected by Pydantic; text that contains no tokenizable words is rejected with HTTP 422, and an unavailable model results in HTTP 503.
 
-The frontend provides equivalent proxy routes at `GET /api/health` and `POST /api/predict`.
+## Model notes and limitations
 
-## Model and limitations
+The notebook explores an LSTM model trained on WikiText-103. The serving code expects a saved Keras model and a matching vocabulary JSON containing `word_to_id` and `id_to_word` maps, including `<PAD>` and `<UNK>`. Inference depends on the model and vocabulary being compatible; replacing one without the other may yield errors or meaningless suggestions.
 
-The notebook defines an embedding followed by two 128-unit LSTM layers, dropout, and a softmax output over the vocabulary. The inference service uses the saved model and `vocabulary.json`; preprocessing in the API is intended to match the notebook's WikiText cleanup and tokenization.
+This system predicts a single next token from a fixed-length context. It may return repetitive, dated, nonsensical, or biased text. It is not a conversational language model and should not be used for high-stakes decisions. The repository does not provide verified accuracy, latency, or other evaluation metrics; do not infer model quality from a sample prediction.
 
-This is an experimental LSTM model trained for next-token prediction. It can produce repetitive, contextually weak, or incorrect suggestions and should not be treated as a modern general-purpose writing assistant. The PRD describes intended product work; routes and capabilities in this README reflect the current implementation. No evaluation metrics are claimed here because verified results are not part of the checked-in inference service.
+## Validation and maintenance
 
-## Development commands
-
-From `frontendlstm/`:
+Frontend scripts (run from `frontendlstm/`):
 
 ```sh
-npm run dev
 npm run lint
 npm run build
 ```
 
-The FastAPI interactive API docs are served at `/docs` while the backend is running. The repository does not currently include a dedicated automated test suite.
+The repository does not currently define a dedicated automated backend or integration test suite. Verify API health and a sample prediction manually after changing model artifacts, preprocessing, or dependencies.
 
-## Troubleshooting
+## Container status
 
-- **Health reports `degraded`:** Check that `MODEL_PATH` and `VOCAB_PATH` refer to readable files, and that the vocabulary contains `<PAD>` and `<UNK>`.
-- **Predictions return 503:** The model did not load. Check backend startup output and verify the model artifact is compatible with the installed TensorFlow version.
-- **Frontend cannot reach the API:** Confirm the backend is running and that `N3xtharBackendUrl` is reachable from the frontend process. With Compose, the frontend uses `http://backend:8000` internally.
-- **Compose cannot find an env file:** Create `frontendlstm/.env` and `backend/app/.env` as described above.
+The Compose setup is intended for local development. The frontend container runs `next dev`, not a production server; use a production-ready frontend image and deployment configuration before using containers in production.
+
+## Security and privacy considerations
+
+The public API is a demo endpoint. Before exposing a deployment to real users, add appropriate rate limiting and abuse protection, review request logging and retention, keep dependencies and model artifacts maintained, and configure HTTPS and restrictive CORS for the deployed origins. Do not send sensitive or confidential text to the demo. No authentication, persistence, or user account functionality is implemented.
 
 ## License
 
-under  construction 
+No `LICENSE` file is currently present. Until a license is added, reuse and redistribution permissions are not specified; contact the repository owner before treating the code or model artifacts as open source.

@@ -24,7 +24,7 @@ services:
     env_file:
       - ./backend/app/.env
     environment:
-      # Dockerfile copies the backend package to /app/app, including artifacts.
-      MODEL_PATH: /app/app/artifacts/lstm_model.keras
-      VOCAB_PATH: /app/app/artifacts/vocabulary.json
+      # The backend image downloads artifacts into /app/artifacts.
+      MODEL_PATH: /app/artifacts/lstm_model.keras
+      VOCAB_PATH: /app/artifacts/vocabulary.json
     restart: unless-stopped
