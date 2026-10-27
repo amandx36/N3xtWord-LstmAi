@@ -1,18 +1,19 @@
-# selected base image 
-from python:3.12-slim
+FROM python:3.12-slim
 
-# set up woring dir 
-workdir /app
+WORKDIR /app
 
-copy requirement.txt .
+COPY requirement.txt .
 
-run pip install -r requirement.txt
+# Retry interrupted package downloads
+RUN python -m pip install --no-cache-dir \
+    --retries 10 \
+    --timeout 120 \
+    -r requirement.txt
 
-# copy dependices file 
-copy . . 
+COPY . .
 
-run python  downloadModelAndVoc.py
+RUN python downloadModelAndVoc.py
 
+EXPOSE 8000
 
-expose 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
