@@ -2,3 +2,4 @@ fastapi>=0.110,<1
 uvicorn[standard]>=0.27,<1
 tensorflow>=2.15,<3
 numpy>=1.24,<3
+huggingface_hub>=0.30
