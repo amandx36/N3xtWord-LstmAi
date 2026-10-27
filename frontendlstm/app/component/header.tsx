@@ -9,7 +9,7 @@ export default function Header() {
       </a>
       <div className="header-caption"><span className="header-dot" /> WORD PREDICTION STUDIO</div>
       <a className="header-link" href="https://github.com/amandx36/N3xtWord-LstmAi" target="_blank" rel="noreferrer">
-        GitHub <span aria-hidden="true">↗</span>
+        GitHub <span aria-hidden="true"></span>
       </a>
     </header>
   );

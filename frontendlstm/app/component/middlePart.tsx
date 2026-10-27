@@ -204,7 +204,7 @@ useEffect(() => {
           </div>
           <button className="predict-button" type="submit" disabled={isLoading || !text.trim()}>
             {isLoading ? 'Thinking…' : 'Predict now'}
-            <span aria-hidden="true">↗</span>
+            <span aria-hidden="true"></span>
           </button>
         </form>
 
