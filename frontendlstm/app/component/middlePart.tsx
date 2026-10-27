@@ -16,6 +16,7 @@ type PredictionResponse = {
 };
 
 export default function MiddlePart() {
+  const[health,setHealth] = useState("")
   const [text, setText] = useState('');
   const [topK, setTopK] = useState(3);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -49,6 +50,35 @@ export default function MiddlePart() {
       }
     };
   }, [text, topK]);
+
+  // function to check the health 
+// Function to check backend health
+async function checkHealth() {
+  setHealth('checking');
+
+  try {
+    console.log('Checking backend health...');
+
+    const response = await fetch('/api/health', {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      setHealth('offline');
+      return;
+    }
+
+    setHealth('online');
+    console.log('Backend is healthy');
+  } catch (problem) {
+    console.error('Health check failed:', problem);
+    setHealth('offline');
+  }
+}
+// automatically calls when the middle part component mount 
+useEffect(() => {
+  checkHealth();
+}, []);
 
   async function fetchPredictions(inputText: string, k: number) {
     setError('');
@@ -108,8 +138,21 @@ export default function MiddlePart() {
   return (
     <section className="predictor" aria-labelledby="predictor-title">
       <div className="predictor-card">
-        <div className="eyebrow"><span className="status-dot" /> LSTM LANGUAGE MODEL</div>
-        <h1 id="predictor-title">Your next word,<br /><span>predicted.</span></h1>
+<div className="card-top">
+  <span className={`health-status ${health}`}>
+    <span className="status-dot"></span>
+    {health === 'checking' && 'Checking API...'}
+    {health === 'online' && 'API Connected'}
+    {health === 'offline' && 'API Disconnected'}
+    {health === '' && 'API Status Unknown'}
+  </span>
+
+  <div className="eyebrow">
+    <span className="status-dot model-dot" />
+    LSTM LANGUAGE MODEL
+  </div>
+</div>
+   <h1 id="predictor-title">Your next word,<br /><span>predicted.</span></h1>
         <p className="intro">Give the model a thought. It will suggest a few ways to finish it.</p>
 
         <form onSubmit={handleSubmit}>
